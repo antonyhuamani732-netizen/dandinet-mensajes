@@ -1,0 +1,5 @@
+{
+  "type": "module",
+  "private": true,
+  "description": "Solo para que Node (pruebas locales) lea estos archivos como módulos ES. El navegador lo ignora."
+}
