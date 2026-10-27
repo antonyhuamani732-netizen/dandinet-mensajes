@@ -826,3 +826,76 @@ table.tabla a { color: var(--c-enlace); }
 .checklist li.hecho b { color: var(--c-tenue); }
 .pasos { margin: var(--e-2) 0 var(--e-3); padding-left: 1.3em; line-height: 1.6; }
 .heroe.ok > span:first-child { color: var(--c-ok); font-weight: var(--w-semi); }
+
+
+/* ==========================================================================
+   DISEÑO 0.8 · lenguaje visual inspirado en la referencia "Ferrari"
+   Esquinas rectas, MAYÚSCULAS con espaciado en botones y menú, títulos de peso 500,
+   un solo rojo de acción y líneas finas en lugar de sombras. Solo usa tokens.
+   ========================================================================== */
+h1, h2 { font-weight: var(--w-titulo); }
+h1 { font-size: var(--t-xl); letter-spacing: var(--track-titulo); }
+h3 { font-size: 0.75rem; letter-spacing: var(--track-etiqueta); font-weight: var(--w-semi); }
+
+/* Botones: rectángulo preciso, mayúsculas, sin sombra */
+.btn, .mini, .saltar { border-radius: var(--r-boton); box-shadow: none; }
+.btn { text-transform: uppercase; letter-spacing: var(--track-boton); font-size: var(--t-sm); font-weight: var(--w-negrita); min-height: 48px; }
+.btn.grande { min-height: 56px; font-size: var(--t-md); }
+.btn.verde, .btn.azul { box-shadow: none; }
+.btn:active, .mini:active { transform: none; filter: brightness(.92); }
+.btn.secundario { text-decoration: underline; text-underline-offset: 4px; }
+.mini { text-transform: uppercase; letter-spacing: 0.06em; font-size: var(--t-xs); font-weight: var(--w-negrita); }
+.mini.check { text-transform: none; letter-spacing: 0; font-weight: var(--w-semi); }
+.mini.sel { background: var(--c-tinta); color: var(--c-fondo); border-color: var(--c-tinta); }
+
+/* Pestañas / segmentos: barra recta con subrayado rojo en la elegida */
+.segmentos { border-radius: 0; background: transparent; padding: 0; gap: 0; border-bottom: 1px solid var(--c-linea); }
+.segmentos button { border-radius: 0; text-transform: uppercase; letter-spacing: var(--track-etiqueta); font-size: 0.75rem; font-weight: var(--w-negrita); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.segmentos button[aria-selected="true"], .segmentos button.sel, .segmentos button.activo { background: transparent; box-shadow: none; color: var(--c-tinta); border-bottom-color: var(--c-primario); }
+
+/* Campos: radio pequeño, línea fina */
+input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea, .filtros select, .filtros input:not([type=checkbox]) { border-radius: var(--r-campo); }
+
+/* Ventanas emergentes: la única superficie con esquinas suaves */
+.modal { border-radius: var(--r-modal) var(--r-modal) 0 0; box-shadow: var(--s-3); }
+@media (min-width: 600px) { .modal { border-radius: var(--r-modal); } }
+
+/* Barra superior negra, nombre en blanco con la @ roja */
+.cabecera { border-bottom: 1px solid #303030; }
+.marca { font-weight: var(--w-titulo); letter-spacing: 0.02em; }
+.marca small { text-transform: uppercase; letter-spacing: var(--track-etiqueta); font-size: 0.6875rem; font-weight: var(--w-semi); color: #b5b5b5; }
+.avatar { background: var(--c-primario) !important; color: #fff !important; }
+
+/* Barra inferior: etiquetas en mayúsculas, la elegida con línea roja arriba */
+nav.inferior a { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.6875rem; font-weight: var(--w-semi); }
+nav.inferior a.activo::before { border-radius: 0; left: 22%; right: 22%; height: 2px; }
+
+/* Insignias y chips: la píldora queda solo para ellas */
+.chip { border-radius: var(--r-pildora); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.6875rem; font-weight: var(--w-negrita); padding: 2px var(--e-2); }
+
+/* Cifras grandes (paneles, deuda): números protagonistas, como fichas técnicas */
+.kpi b, .kpi-p b, .deuda .monto, .hero .cifra { font-weight: var(--w-negrita); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+
+/* Inicio de sesión: banda "cine" oscura en cualquier tema */
+.login { background: #181818; color: #fff; }
+.login h1 { color: #fff; font-weight: var(--w-titulo); font-size: var(--t-2xl); letter-spacing: -0.02em; }
+.login h1 .arroba { color: #ff4a3d; }
+.login > p { color: #a3a3a3; }
+.login > p:first-of-type { text-transform: uppercase; letter-spacing: var(--track-etiqueta); font-size: 0.75rem; }
+.login img { border-radius: 0; box-shadow: none; }
+.login .pie { color: #8f8f8f; }
+.login h1::after { content: ""; display: block; width: 48px; height: 3px; background: #da291c; margin: var(--e-4) auto 0; }
+.btn small, .btn .sub, .mini small { text-transform: none; letter-spacing: 0; font-weight: var(--w-normal); }
+/* rojo con moderación: íconos de las baldosas en el color del texto; el rojo queda para insignias, alertas y la acción principal */
+.baldosa { box-shadow: none; }
+.baldosa .ic { color: var(--c-tinta); }
+.baldosa:hover, .baldosa:focus-visible { border-color: var(--c-tinta); }
+.baldosa:active { transform: none; background: var(--c-superficie-2); }
+.insignia-b { background: var(--c-superficie-2); color: var(--c-tinta); }
+.acciones-ficha .accion { border-radius: 0; box-shadow: none; }
+.acciones-ficha .accion .ic { color: var(--c-tinta); }
+.acciones-ficha .accion.destacada .ic { color: var(--c-sobre-primario); }
+.acciones-ficha .accion:active { transform: none; background: var(--c-superficie-2); }
+.cabeza-cli h2 { font-size: var(--t-lg); line-height: 1.25; letter-spacing: 0.01em; }
+/* logo D@ (cuadrado, como el ícono) */
+.marca img { border-radius: 0; }

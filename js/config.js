@@ -1,7 +1,7 @@
 // Configuración de la app D@ndinet Mensajes. No hay secretos aquí: la seguridad la da
 // el servidor (verifica el inicio de sesión con Google en cada llamada).
 export const CONFIG = {
-  VERSION: '0.7.1',
+  VERSION: '0.8.0',
   // URL de la implementación web de DANDINET_MENSAJES (docs/FASE1_INSTALACION.md, paso 5).
   // Mientras diga PEGAR_AQUI, la app avisa que falta instalar el servidor.
   API_URL: 'https://script.google.com/macros/s/AKfycbwmIJHGsmH2lv1n2zo9e2Wo0ZNa74voOIS5C7g8IeI9E8Z73HHdIvRKMayS18Cq-sipYQ/exec',

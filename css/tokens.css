@@ -1,12 +1,15 @@
 /* ==========================================================================
-   D@NDINET · TOKENS DE DISEÑO (fuente única de verdad)
+   D@NDINET MENSAJES · TOKENS DE DISEÑO (fuente única de verdad)
    --------------------------------------------------------------------------
-   Inspirado en la referencia "Stripe" (docs/DESIGN.md), adaptado al uso en campo:
-   - Tinta azul marino profunda (nunca negro puro) y UN solo color de acción (índigo).
-   - Pesos 400–700 (no 300): se leen bajo el sol.
-   - Cifras tabulares para dinero.
-   - Botones píldora con mínimo 44 px de alto (dedo).
-   - Tema: Automático (según el celular), Día (alto contraste) o Noche. Se elige en Mi cuenta.
+   Inspirado en la referencia "Ferrari" (design-md/ferrari/DESIGN.md), adaptado al uso en campo.
+   Solo se toma el LENGUAJE VISUAL (no marcas, logos ni nombres de Ferrari):
+   - Lienzo casi negro (#181818, nunca negro puro) y bandas blancas "editoriales" en modo claro.
+   - UN solo color de acción: rojo carrera (#da291c), usado con moderación (botón principal, marcas clave).
+   - Esquinas rectas en botones, tarjetas y bandas; píldora solo para insignias y avatares.
+   - Botones y menú en MAYÚSCULAS con espaciado amplio. Títulos de peso 500 (nunca negrita).
+   - Profundidad con líneas finas y escalones de brillo, sin sombras apiladas.
+   - Adaptación de campo: texto de 16 px, mínimo 13 px, toques de 44 px, contraste ≥ 4.5:1.
+   Tema: Automático (según el celular), Día (alto contraste) o Noche. Se elige en Mi cuenta.
    Todos los demás estilos (estilos.css) usan SOLO estas variables.
    ========================================================================== */
 
@@ -14,70 +17,76 @@
   color-scheme: light;
 
   /* ---- Marca y acción ------------------------------------------------------ */
-  --c-primario: #533afd;            /* acción principal (Cobrar, Guardar). Contraste con blanco 6.1:1 */
-  --c-primario-hover: #4434d4;
-  --c-primario-press: #2e2b8c;
-  --c-primario-suave: #eeebff;      /* fondos de selección / chips activos */
+  --c-primario: #da291c;            /* rojo carrera: acción principal. Con blanco 4.9:1 */
+  --c-primario-hover: #b01e0a;
+  --c-primario-press: #9d2211;
+  --c-primario-suave: #fbe9e7;      /* fondos de selección / chips activos */
   --c-sobre-primario: #ffffff;
-  --c-marca-oscura: #0c2447;        /* barra superior = azul del logo D@NDINET */
-  --c-marca-cian: #57cadb;          /* colores del logo (fibra óptica) */
-  --c-marca-oro: #e2c579;           /* sobre azul: 9.2:1 */
-  --c-marca-oro-texto: #8a6a12;     /* dorado para texto sobre fondo claro: 4.8:1 */
+  --c-marca-oscura: #181818;        /* barra superior y bandas oscuras */
+  --c-marca-cian: #969696;
+  --c-marca-oro: #ff4a3d;           /* la @ del nombre sobre la barra oscura: 5.3:1 */
+  --c-marca-oro-texto: #b01e0a;     /* acento rojo para íconos y texto sobre fondo claro: 6.9:1 */
   --c-sobre-marca: #ffffff;
 
-  /* ---- Superficies ------------------------------------------------------------- */
-  --c-fondo: #f6f9fc;               /* lienzo de la app */
-  --c-superficie: #ffffff;          /* tarjetas, listas */
-  --c-superficie-2: #f0f4f9;        /* campos de solo lectura, filas alternas */
-  --c-superposicion: rgba(13, 37, 61, 0.48);   /* fondo de ventanas emergentes */
+  /* ---- Superficies (modo claro = banda editorial blanca) ------------------------ */
+  --c-fondo: #f7f7f7;
+  --c-superficie: #ffffff;
+  --c-superficie-2: #ebebeb;
+  --c-superposicion: rgba(24, 24, 24, 0.6);
 
   /* ---- Texto (todas ≥ 4.5:1 sobre --c-fondo y --c-superficie) ---------------- */
-  --c-tinta: #0d253d;
-  --c-tinta-2: #273951;
-  --c-tenue: #536580;               /* 5.6:1 sobre blanco */
-  --c-enlace: #4434d4;
+  --c-tinta: #181818;
+  --c-tinta-2: #303030;
+  --c-tenue: #5e5e5e;               /* 6.5:1 sobre blanco */
+  --c-enlace: #b01e0a;
 
   /* ---- Bordes ---------------------------------------------------------------- */
-  --c-linea: #e3e8ee;               /* separadores */
-  --c-borde-campo: #7f91aa;         /* borde de inputs: 3.2:1 (mínimo para controles) */
+  --c-linea: #d2d2d2;               /* líneas finas */
+  --c-borde-campo: #8a8a8a;         /* borde de inputs: 3.5:1 (mínimo para controles) */
 
   /* ---- Estados del negocio (texto sobre su fondo ≥ 4.5:1) --------------------- */
-  --c-ok: #157030;        --c-ok-fondo: #e6f4ea;        /* Activo / Pagado / En línea (5.4:1) */
-  --c-aviso: #8a5a00;     --c-aviso-fondo: #fff4d6;     /* Por vencer / Parcial / Sin señal */
-  --c-peligro: #b42318;   --c-peligro-fondo: #fdecec;   /* Moroso / Vencido / Error */
-  --c-susp: #9a4a00;      --c-susp-fondo: #fff0e1;      /* Suspendido */
-  --c-neutro: #4a5a72;    --c-neutro-fondo: #eef1f5;    /* Cortado / Pendiente */
-  --c-baja: #2b3443;      --c-baja-fondo: #dde3ea;      /* Baja */
-  --c-ok-solido: #1a7f37; --c-peligro-solido: #c0362c;  /* rellenos (botón corte, deuda) */
+  --c-ok: #03793e;        --c-ok-fondo: #e3f3ea;        /* Activo / Pagado / En línea */
+  --c-aviso: #7a5600;     --c-aviso-fondo: #fdf3c4;     /* Por vencer / Sin señal */
+  --c-peligro: #b01e0a;   --c-peligro-fondo: #fbe4e1;   /* Moroso / Vencido / Error */
+  --c-susp: #8f4500;      --c-susp-fondo: #fdeedf;      /* Suspendido */
+  --c-neutro: #4a4a4a;    --c-neutro-fondo: #ebebeb;    /* Cortado / Pendiente */
+  --c-baja: #303030;      --c-baja-fondo: #d9d9d9;      /* Baja */
+  --c-ok-solido: #03904a; --c-peligro-solido: #9d2211;  /* rellenos (botón de peligro más oscuro que el principal) */
 
   /* ---- Tipografía (fuentes del sistema: rápidas y disponibles sin señal) ------- */
-  --f-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --f-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --f-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --t-xs: 0.8125rem;   /* 13 px · etiquetas, chips (mínimo legible en campo) */
-  --t-sm: 0.875rem;    /* 14 px · texto secundario */
+  --t-sm: 0.875rem;    /* 14 px · texto secundario, botones */
   --t-md: 1rem;        /* 16 px · cuerpo */
-  --t-lg: 1.125rem;    /* 18 px · botones grandes */
-  --t-xl: 1.375rem;    /* 22 px · títulos de pantalla */
-  --t-2xl: 1.75rem;    /* 28 px · montos destacados */
-  --t-3xl: 2.25rem;    /* 36 px · cifra principal */
+  --t-lg: 1.125rem;    /* 18 px · títulos de componente */
+  --t-xl: 1.625rem;    /* 26 px · títulos de pantalla */
+  --t-2xl: 2.25rem;    /* 36 px · montos destacados */
+  --t-3xl: 3rem;       /* 48 px · cifra principal */
   --w-normal: 400; --w-medio: 500; --w-semi: 600; --w-negrita: 700;
   --w-cuerpo: 400;                  /* peso del texto normal (500 en modo Día) */
-  --lh-ajustado: 1.15; --lh-normal: 1.45;
-  --track-titulo: -0.02em;          /* tracking negativo en títulos (rasgo Stripe) */
+  --w-titulo: 500;                  /* títulos: seguros, nunca negrita */
+  --lh-ajustado: 1.15; --lh-normal: 1.5;
+  --track-titulo: -0.01em;          /* tracking negativo solo en títulos */
+  --track-boton: 0.1em;             /* MAYÚSCULAS de botones (≈1.4 px) */
+  --track-etiqueta: 0.08em;         /* MAYÚSCULAS de etiquetas y menú */
 
   /* ---- Espaciado (escala de 4 px) -------------------------------------------- */
   --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 20px; --e-6: 24px; --e-8: 32px; --e-10: 40px; --e-12: 48px;
 
-  /* ---- Radios (más cerrados por dentro, más suaves por fuera) ------------------ */
-  --r-xs: 4px; --r-sm: 6px; --r-md: 8px; --r-lg: 12px; --r-xl: 16px; --r-pildora: 9999px;
+  /* ---- Radios: rectos por defecto ---------------------------------------------- */
+  --r-xs: 2px; --r-sm: 4px; --r-md: 2px; --r-lg: 0px; --r-xl: 0px; --r-pildora: 9999px;
+  --r-boton: 0px;                   /* botones: esquina recta (rasgo principal) */
+  --r-campo: 4px;                   /* cuadros de texto */
+  --r-modal: 12px;                  /* ventanas emergentes */
 
-  /* ---- Sombras (teñidas de azul, nunca negro puro) ----------------------------- */
-  --s-1: 0 1px 3px rgba(0, 55, 112, 0.08);
-  --s-2: 0 8px 24px rgba(0, 55, 112, 0.08), 0 2px 6px rgba(0, 55, 112, 0.04);
-  --s-3: 0 16px 40px rgba(0, 55, 112, 0.18);
+  /* ---- Profundidad: líneas finas, no sombras apiladas --------------------------- */
+  --s-1: 0 0 0 1px var(--c-linea);
+  --s-2: 0 0 0 1px var(--c-linea);
+  --s-3: 0 12px 32px rgba(0, 0, 0, 0.28);
 
   /* ---- Interacción ------------------------------------------------------------ */
-  --foco: 0 0 0 3px rgba(83, 58, 253, 0.40);
+  --foco: 0 0 0 3px rgba(218, 41, 28, 0.40);
   --toque-min: 44px;
   --dur: 160ms; --curva: cubic-bezier(0.2, 0, 0, 1);
 
@@ -88,93 +97,93 @@
   --ancho-max: 680px;
   --alto-nav: 64px;
 
-  /* ---- Plantilla de documentos imprimibles (órdenes, hojas de ruta, reportes) --------
-     Los mismos colores del recibo PDF (ReciboDocs.gs). NO cambian con el tema: un
-     documento siempre se ve e imprime igual (fondo blanco). */
-  --doc-azul: #0C2447;  --doc-azul-2: #2C5282;  --doc-teal: #2A9D8F;  --doc-rojo: #C62828;
-  --doc-gris: #5F6B7A;  --doc-fondo: #F4F6F8;   --doc-tinta: #1A202C; --doc-linea: #D9DEE5;
-  --doc-amarillo: #E2C579;  --doc-blanco: #FFFFFF;  --doc-zebra: #F7F9FB;
+  /* ---- Plantilla de documentos imprimibles: NO cambian con el tema (fondo blanco) -- */
+  --doc-azul: #181818;  --doc-azul-2: #303030;  --doc-teal: #03904a;  --doc-rojo: #da291c;
+  --doc-gris: #5e5e5e;  --doc-fondo: #f7f7f7;   --doc-tinta: #181818; --doc-linea: #d2d2d2;
+  --doc-amarillo: #da291c;  --doc-blanco: #FFFFFF;  --doc-zebra: #f7f7f7;
 }
 
-/* ==== MODO NOCHE ==================================================================
+/* ==== MODO NOCHE (lienzo "cine" casi negro) ===========================================
    Se aplica (a) automáticamente si el celular está en oscuro y el usuario no eligió "Día",
    o (b) siempre que el usuario eligió "Noche" (html[data-tema="noche"]).
    Los dos bloques tienen LOS MISMOS valores: si cambia uno, cambie el otro. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="dia"]) {
     color-scheme: dark;
-    --c-primario: #7b6bff;          /* con texto oscuro encima: 5.9:1 */
-    --c-primario-hover: #9284ff;
-    --c-primario-press: #a99eff;
-    --c-primario-suave: #26234d;
-    --c-sobre-primario: #0b1220;
-    --c-marca-oscura: #081a33;
-    --c-marca-oro-texto: #e2c579;
-    --c-sobre-marca: #e8edf7;
+    --c-primario: #da291c;          /* con texto blanco 4.9:1 */
+    --c-primario-hover: #e8392c;
+    --c-primario-press: #b01e0a;
+    --c-primario-suave: #3a1714;
+    --c-sobre-primario: #ffffff;
+    --c-marca-oscura: #101010;
+    --c-marca-oro: #ff4a3d;
+    --c-marca-oro-texto: #ff6b5f;   /* acento sobre fondo oscuro: 5.7:1 */
+    --c-sobre-marca: #ffffff;
 
-    --c-fondo: #0b1220;
-    --c-superficie: #131c2e;
-    --c-superficie-2: #1a2539;
-    --c-superposicion: rgba(0, 0, 0, 0.6);
+    --c-fondo: #181818;
+    --c-superficie: #222222;
+    --c-superficie-2: #303030;
+    --c-superposicion: rgba(0, 0, 0, 0.7);
 
-    --c-tinta: #e8edf7;
-    --c-tinta-2: #c9d3e4;
-    --c-tenue: #9aa9c2;
-    --c-enlace: #a99eff;
+    --c-tinta: #ffffff;
+    --c-tinta-2: #d6d6d6;
+    --c-tenue: #a3a3a3;             /* 6.3:1 sobre #222 */
+    --c-enlace: #ff6b5f;
 
-    --c-linea: #24304a;
-    --c-borde-campo: #5d6d89;
+    --c-linea: #363636;
+    --c-borde-campo: #737373;
 
-    --c-ok: #4fc277;        --c-ok-fondo: #12301f;
-    --c-aviso: #f2c14e;     --c-aviso-fondo: #3a2e0c;
-    --c-peligro: #ff7b72;   --c-peligro-fondo: #3d1517;
-    --c-susp: #ffaa5c;      --c-susp-fondo: #3b2410;
-    --c-neutro: #a8b6cc;    --c-neutro-fondo: #212c40;
-    --c-baja: #c3cbd8;      --c-baja-fondo: #2a3446;
-    --c-ok-solido: #238a42; --c-peligro-solido: #b8352b;
+    --c-ok: #4cc484;        --c-ok-fondo: #0f2b1c;
+    --c-aviso: #f6e05e;     --c-aviso-fondo: #332c0a;
+    --c-peligro: #ff7a70;   --c-peligro-fondo: #3a1714;
+    --c-susp: #ffaa5c;      --c-susp-fondo: #36230f;
+    --c-neutro: #bdbdbd;    --c-neutro-fondo: #2c2c2c;
+    --c-baja: #d0d0d0;      --c-baja-fondo: #333333;
+    --c-ok-solido: #03904a; --c-peligro-solido: #9d2211;
 
-    --s-1: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --s-2: 0 8px 24px rgba(0, 0, 0, 0.45);
-    --s-3: 0 16px 40px rgba(0, 0, 0, 0.6);
-    --foco: 0 0 0 3px rgba(123, 107, 255, 0.55);
+    --s-1: 0 0 0 1px var(--c-linea);
+    --s-2: 0 0 0 1px var(--c-linea);
+    --s-3: 0 16px 40px rgba(0, 0, 0, 0.7);
+    --foco: 0 0 0 3px rgba(255, 107, 95, 0.55);
   }
 }
 :root[data-tema="noche"] {
   color-scheme: dark;
-  --c-primario: #7b6bff;          /* con texto oscuro encima: 5.9:1 */
-  --c-primario-hover: #9284ff;
-  --c-primario-press: #a99eff;
-  --c-primario-suave: #26234d;
-  --c-sobre-primario: #0b1220;
-  --c-marca-oscura: #081a33;
-  --c-marca-oro-texto: #e2c579;
-  --c-sobre-marca: #e8edf7;
+  --c-primario: #da291c;
+  --c-primario-hover: #e8392c;
+  --c-primario-press: #b01e0a;
+  --c-primario-suave: #3a1714;
+  --c-sobre-primario: #ffffff;
+  --c-marca-oscura: #101010;
+  --c-marca-oro: #ff4a3d;
+  --c-marca-oro-texto: #ff6b5f;
+  --c-sobre-marca: #ffffff;
 
-  --c-fondo: #0b1220;
-  --c-superficie: #131c2e;
-  --c-superficie-2: #1a2539;
-  --c-superposicion: rgba(0, 0, 0, 0.6);
+  --c-fondo: #181818;
+  --c-superficie: #222222;
+  --c-superficie-2: #303030;
+  --c-superposicion: rgba(0, 0, 0, 0.7);
 
-  --c-tinta: #e8edf7;
-  --c-tinta-2: #c9d3e4;
-  --c-tenue: #9aa9c2;
-  --c-enlace: #a99eff;
+  --c-tinta: #ffffff;
+  --c-tinta-2: #d6d6d6;
+  --c-tenue: #a3a3a3;
+  --c-enlace: #ff6b5f;
 
-  --c-linea: #24304a;
-  --c-borde-campo: #5d6d89;
+  --c-linea: #363636;
+  --c-borde-campo: #737373;
 
-  --c-ok: #4fc277;        --c-ok-fondo: #12301f;
-  --c-aviso: #f2c14e;     --c-aviso-fondo: #3a2e0c;
-  --c-peligro: #ff7b72;   --c-peligro-fondo: #3d1517;
-  --c-susp: #ffaa5c;      --c-susp-fondo: #3b2410;
-  --c-neutro: #a8b6cc;    --c-neutro-fondo: #212c40;
-  --c-baja: #c3cbd8;      --c-baja-fondo: #2a3446;
-  --c-ok-solido: #238a42; --c-peligro-solido: #b8352b;
+  --c-ok: #4cc484;        --c-ok-fondo: #0f2b1c;
+  --c-aviso: #f6e05e;     --c-aviso-fondo: #332c0a;
+  --c-peligro: #ff7a70;   --c-peligro-fondo: #3a1714;
+  --c-susp: #ffaa5c;      --c-susp-fondo: #36230f;
+  --c-neutro: #bdbdbd;    --c-neutro-fondo: #2c2c2c;
+  --c-baja: #d0d0d0;      --c-baja-fondo: #333333;
+  --c-ok-solido: #03904a; --c-peligro-solido: #9d2211;
 
-  --s-1: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --s-2: 0 8px 24px rgba(0, 0, 0, 0.45);
-  --s-3: 0 16px 40px rgba(0, 0, 0, 0.6);
-  --foco: 0 0 0 3px rgba(123, 107, 255, 0.55);
+  --s-1: 0 0 0 1px var(--c-linea);
+  --s-2: 0 0 0 1px var(--c-linea);
+  --s-3: 0 16px 40px rgba(0, 0, 0, 0.7);
+  --foco: 0 0 0 3px rgba(255, 107, 95, 0.55);
 }
 
 /* ==== MODO DÍA (alto contraste para la calle, bajo el sol) =========================
@@ -182,25 +191,25 @@
    letra un poco más gruesa. Todo el texto supera 7:1 (nivel AAA). */
 :root[data-tema="dia"] {
   color-scheme: light;
-  --c-fondo: #eef2f7;
+  --c-fondo: #f2f2f2;
   --c-superficie: #ffffff;
-  --c-superficie-2: #e6ebf2;
-  --c-tinta: #031427;
-  --c-tinta-2: #0d253d;
-  --c-tenue: #2f415a;               /* 10:1 sobre blanco */
-  --c-linea: #b9c4d2;
-  --c-borde-campo: #4f6079;         /* 6.5:1 */
-  --c-primario: #4330e6;            /* 7.3:1 con blanco */
-  --c-primario-hover: #3727c4;
-  --c-enlace: #3727c4;
-  --c-ok: #0d5a24;        --c-ok-fondo: #e1f2e6;
-  --c-aviso: #5c3b00;     --c-aviso-fondo: #ffefc2;
-  --c-peligro: #8f150c;   --c-peligro-fondo: #fde4e2;
-  --c-susp: #7a3a00;      --c-susp-fondo: #ffe9d4;
-  --c-neutro: #33425a;    --c-neutro-fondo: #e6eaf0;
-  --c-peligro-solido: #a6261c;
+  --c-superficie-2: #e4e4e4;
+  --c-tinta: #000000;
+  --c-tinta-2: #181818;
+  --c-tenue: #3a3a3a;               /* 11:1 sobre blanco */
+  --c-linea: #b0b0b0;
+  --c-borde-campo: #555555;         /* 7.5:1 */
+  --c-primario: #9d2211;            /* 7.9:1 con blanco */
+  --c-primario-hover: #7a1a0d;
+  --c-enlace: #9d2211;
+  --c-marca-oro-texto: #9d2211;
+  --c-ok: #02582e;        --c-ok-fondo: #e0f1e7;
+  --c-aviso: #533a00;     --c-aviso-fondo: #fbeeb4;
+  --c-peligro: #8a1606;   --c-peligro-fondo: #fadedb;
+  --c-susp: #6e3500;      --c-susp-fondo: #fbe5d0;
+  --c-neutro: #2e2e2e;    --c-neutro-fondo: #e4e4e4;
+  --c-peligro-solido: #7a1a0d;
   --w-cuerpo: 500;
-  --s-1: 0 1px 3px rgba(0, 30, 70, 0.16), 0 0 0 1px rgba(0, 30, 70, 0.08);
 }
 
 /* ==== MOVIMIENTO REDUCIDO ======================================================= */

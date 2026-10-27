@@ -1,6 +1,6 @@
 // SERVICE WORKER: guarda la app en el celular para que ABRA SIN INTERNET.
 // Al publicar cambios, suba la VERSION: el celular descarga la nueva y borra la vieja.
-const VERSION = 'dmensajes-v0.7.1';   // prefijo propio: no borra la caché de la app D@NDINET
+const VERSION = 'dmensajes-v0.8.0';   // prefijo propio: no borra la caché de la app D@NDINET
 const ARCHIVOS = ['./', './index.html', './manifest.webmanifest', './css/tokens.css', './css/estilos.css',
   './js/app.js', './js/iconos.js', './js/api.js', './js/auth.js', './js/config.js', './js/datos.js', './js/db.js', './js/sync.js', './js/informe.js', './js/macro.js', './js/importar.js', './js/ficha.js', './js/mapa.js', './js/avisos.js', './js/envios.js', './js/ayuda.js', './js/ordenes.js', './js/mapaclientes.js', './js/reportes.js', './js/vistareportes.js', './js/cuadre.js', './js/paralelo.js', './js/tema.js',
   './icons/icono-192.png', './icons/icono-512.png', './icons/icono-maskable-512.png', './icons/apple-touch-icon-180.png', './icons/favicon-32.png'];
