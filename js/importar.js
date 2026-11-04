@@ -96,13 +96,15 @@ export async function vImportar(ui) {
         <div><span>Mes</span><b>${esc(lec.periodo)}</b></div><div><span>Hojas</span><b>${lec.hojas}</b></div><div><span>Clientes</span><b>${lec.filas.length}</b></div>
         <div class="ancho ${cuadra ? 'ok' : 'peligro'}"><span>Total del informe ${cuadra ? '· cuadra con el archivo ✓' : '· NO cuadra con el archivo'}</span><b>${soles(lec.total)}</b></div></section>
       ${lec.hayMes ? '' : `<label>El nombre del archivo no dice el mes. ¿De qué mes es?<input type="month" id="mes" value="${esc(lec.periodo)}"></label>`}
+      ${lec.avisos.filter((a) => a.startsWith('ATENCIÓN')).map((a) => `<p class="aviso-caja peligro">${esc(a)}</p>`).join('')}
       ${lec.avisos.length ? `<details><summary>${lec.avisos.length} aviso(s) de lectura</summary><ul>${lec.avisos.map((a) => `<li>${esc(a)}</li>`).join('')}</ul></details>` : ''}
       <button class="btn grande verde" id="revisar" ${lec.filas.length ? '' : 'disabled'}>${ic('ver')}Revisar cambios</button>`;
     lectura.querySelector('#revisar').onclick = () => {
       const mes = lectura.querySelector('#mes');
       if (mes) lec.periodo = mes.value;
       conEspera(previa, () => llamar('informePrevia', Object.assign({ archivo: archivo.name, archivoBase64: base64(bytes) }, lec)),
-        (r) => { lectura.innerHTML = ''; pintarPrevia(ui, previa, r); });
+        (r) => { lectura.innerHTML = ''; pintarPrevia(ui, previa, r); },
+        (err) => /ya se importó/.test(err.message) && ultimo ? ofrecerCorregirMeses(ui, previa, err, lec, bytes) : false);
     };
   };
 
@@ -132,10 +134,36 @@ export async function vImportar(ui) {
   };
 }
 
-/** Ejecuta una llamada al servidor mostrando "procesando" y los errores en la caja. */
-async function conEspera(caja, fn, alTerminar) {
+/**
+ * El mismo archivo ya estaba aplicado: se ofrece corregir solo los meses de ese informe
+ * (para informes que se leyeron con 0 meses, ej. "Pagos Pendientes" en formato "1, $30.00").
+ */
+function ofrecerCorregirMeses(ui, caja, err, lec, bytes) {
+  const conMeses = lec.filas.filter((f) => f.meses > 0).length;
+  caja.innerHTML = `<p class="aviso">${ic('alerta')}<span>${esc(err.message)}</span></p>
+    <p class="sub">Si en ese informe los avisos salían <b>sin los meses de deuda</b>, puede corregirlo con esta lectura
+      (${conMeses} de ${lec.filas.length} clientes con meses). Solo cambian los meses y el estado de cada cliente;
+      teléfonos, avisos enviados y correcciones no se tocan.</p>
+    <button class="btn grande verde" id="corregirMeses">${ic('editar')}Corregir meses</button>`;
+  caja.querySelector('#corregirMeses').onclick = async () => {
+    if (!(await ui.confirmar('Se actualizan los meses de deuda del último informe con lo leído de este archivo y se recalcula el estado de cada cliente.',
+      { titulo: 'Corregir meses', si: 'Corregir' }))) return;
+    conEspera(caja, () => llamar('informeCorregirMeses', { archivoBase64: base64(bytes),
+      filas: lec.filas.map((f) => ({ hoja: f.hoja, fila: f.fila, meses: f.meses, revision: f.revision })) }), async (r) => {
+      ui.aviso(r.lineas ? `Meses corregidos en ${r.clientes} clientes (${r.idInforme}).` : 'Los meses ya estaban bien: no hubo cambios.');
+      await ui.sincronizar(); vImportar(ui);
+    });
+  };
+  return true;
+}
+
+/** Ejecuta una llamada al servidor mostrando "procesando" y los errores en la caja. alError(e) → true si ya lo atendió. */
+async function conEspera(caja, fn, alTerminar, alError) {
   caja.innerHTML = `<p class="sub">${ic('sync', 'girando')} Procesando en el servidor…</p>`;
-  try { await alTerminar(await fn()); } catch (e) { caja.innerHTML = `<p class="aviso error">${ic('alerta')}<span>${esc(e.message)}</span></p>`; }
+  try { await alTerminar(await fn()); } catch (e) {
+    if (alError && alError(e)) return;
+    caja.innerHTML = `<p class="aviso error">${ic('alerta')}<span>${esc(e.message)}</span></p>`;
+  }
 }
 
 function pintarPrevia(ui, caja, r) {

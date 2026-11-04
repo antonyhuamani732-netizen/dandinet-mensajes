@@ -35,6 +35,17 @@ export function aNumero(v) {
   return /^-?\d+(\.\d+)?$/.test(s) ? Number(s) : null;
 }
 
+/**
+ * Meses pendientes. Además del número simple acepta el formato del informe desde noviembre 2026:
+ * "1, $30.00" (meses, coma, monto) y textos como "2 meses". null si no se reconoce.
+ */
+export function aMeses(v) {
+  const n = aNumero(v);
+  if (n !== null) return n;
+  const m = /^\s*(\d{1,3})\s*(?:,|;|-|meses?\b|$)/i.exec(String(v === null || v === undefined ? '' : v));
+  return m ? Number(m[1]) : null;
+}
+
 const fechaIso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 /** Fecha de instalación: Date, "22/08/2026 18:44", "2026-08-22" o número de serie de Excel → 'AAAA-MM-DD' o ''. */
@@ -231,7 +242,7 @@ export function leerInforme({ nombreArchivo, hojas }, hoy = new Date()) {
         const t = unEspacio(txt(v));
         if (t) otros.push(txt(cab[c]) ? `${unEspacio(txt(cab[c]))}: ${t}` : t);
       });
-      const monto = aNumero(celda(r, 'monto')), meses = aNumero(celda(r, 'meses')), plan = aNumero(celda(r, 'plan'));
+      const monto = aNumero(celda(r, 'monto')), meses = aMeses(celda(r, 'meses')), plan = aNumero(celda(r, 'plan'));
       if (monto !== null) totalOriginal += monto;
       const { nombre, servicio } = limpiarNombre(txt(celda(r, 'nombre')));
       let dni = soloDigitos(txt(celda(r, 'dni')));
@@ -266,6 +277,10 @@ export function leerInforme({ nombreArchivo, hojas }, hoy = new Date()) {
   }
   const { periodo, hayMes } = periodoDesdeNombre(nombreArchivo, hoy);
   if (!hayMes) avisos.push('El nombre del archivo no dice el mes del informe (ej. "HASTA OCTUBRE 2026"): se tomó el mes actual. Revíselo antes de aplicar.');
+  // sin meses no hay estado de mora ni {Meses}/{Periodos} en los avisos: que se vea antes de aplicar
+  const sinMeses = filas.filter((x) => x.monto > 0 && !(x.meses > 0)).length;
+  if (sinMeses) avisos.unshift(`ATENCIÓN: ${sinMeses} de ${filas.length} clientes con deuda quedaron sin meses pendientes (la columna "Pagos Pendientes" no se pudo leer). ` +
+    'Sin ese dato los avisos no dicen los meses y todos quedan "Por vencer". No aplique el informe: avise para revisar el formato.');
   const r2 = (x) => Math.round(x * 100) / 100;
   return { periodo, hayMes, hojas: hojasLeidas, filas, total: r2(total), totalOriginal: r2(totalOriginal), duplicadas, avisos };
 }

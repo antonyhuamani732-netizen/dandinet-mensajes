@@ -906,3 +906,6 @@ nav.inferior a.activo::before { border-radius: 0; left: 22%; right: 22%; height:
 .con-imagen small { display: block; color: var(--c-tenue); font-size: var(--t-xs); }
 .img-prev { display: grid; place-items: center; width: 64px; height: 64px; flex-shrink: 0; font-size: 11px; color: var(--c-tenue); border: 1px dashed var(--c-borde-campo); text-align: center; }
 .imagen-aviso { margin-bottom: var(--e-4); }
+
+/* aviso grave al leer un informe (ej. columna de meses no reconocida) */
+.aviso-caja { margin: 10px 0; padding: 10px 12px; border-left: 4px solid var(--c-peligro); background: var(--c-peligro-fondo); font-weight: 600; }
