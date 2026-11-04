@@ -23,7 +23,7 @@ export const TEXTOS = {
   imagen: ['Imagen de los avisos', ['Es como el botón "Imagen" de la macro: una sola imagen (QR y cuentas de pago) para todos los avisos.', 'Va en el mismo mensaje: al final hay un enlace y WhatsApp muestra la imagen encima del texto. Usted solo pulsa Enviar.',
     'Si no aparece la imagen, espere un segundo antes de enviar: WhatsApp la está cargando.']],
   tanda: ['Tanda', ['Elija zona y estado; la app ordena primero a los contactos guardados.', 'No se envía a quien pidió NO ENVIAR, pagó, prometió pagar o ya fue avisado hace poco.',
-    'Toque "Ver por qué" para ver los excluidos.']],
+    'Toque "Ver por qué" para ver los excluidos.', '"Abrir con": elija WhatsApp o WhatsApp Business (en Android). Se recuerda en este celular.']],
   verificar: ['Verificar números', ['Abre el chat SIN enviar nada.', 'Si el chat se abre, tiene WhatsApp. Vale para todos los clientes con ese número.']],
   pendientes: ['Pendientes por atender', ['Quejas, números equivocados, reclamos, cortes y bajas.', 'Atienda primero los de prioridad alta y los más antiguos.',
     'Puede mandarlos al técnico con "Crear visita".']],

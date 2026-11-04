@@ -2,8 +2,8 @@
 // La app arma cada mensaje (reglas de la macro), abre WhatsApp con el texto escrito y usted pulsa
 // Enviar. Al volver, marca cómo fue: así se registra el aviso y se diagnostica el número.
 // Pestañas: Tanda · Verificar números · Confirmaciones de pago · Hoy · Plantillas.
-import { D, esc, soles, txtFecha, txtTel, hoyISO, claseEstado, aplicarLocal, telefonosDe, abrirExterno } from './datos.js';
-import { candidatosTanda, candidatosConfirmacion, motivoHorario, armarMensaje, variablesDesconocidas, VARIABLES, ultimoInforme } from './avisos.js';
+import { D, esc, soles, txtFecha, txtTel, hoyISO, claseEstado, aplicarLocal, telefonosDe, abrirExterno, enlaceWa, appWa, fijarAppWa, APPS_WA, esAndroid } from './datos.js';
+import { candidatosTanda, candidatosConfirmacion, motivoHorario, armarMensaje, variablesDesconocidas, VARIABLES, ultimoInforme, conImagen, quitarImagen } from './avisos.js';
 import { ic } from './iconos.js';
 import { ayuda, celebrar } from './ayuda.js';
 import { imagenActiva, imagenAviso, compartirImagen, prepararImagen, guardarLocal } from './imagen.js';
@@ -23,7 +23,13 @@ const NIVELES = [['', 'Todos los avisos'], ['0', '1.er aviso'], ['1', '2.º avis
 const WA = { SI: ['WhatsApp ✓', 'e-activo'], NO: ['sin WhatsApp', 'e-moroso'], POR_VERIFICAR: ['por verificar', 'e-porvencer'] };
 
 async function hacer(ui, tipo, datos) { await ui.encolar(tipo, datos); await aplicarLocal(tipo, datos); }
-const abrirWa = (numero, texto) => abrirExterno('https://wa.me/' + String(numero).replace(/\D/g, '') + (texto ? '?text=' + encodeURIComponent(texto) : ''));
+const abrirWa = (numero, texto) => abrirExterno(enlaceWa(numero, texto));
+/** Nombre de la aplicación elegida para el botón ("Abrir WhatsApp Business"). */
+const nombreApp = () => (appWa() === 'business' ? 'WhatsApp Business' : 'WhatsApp');
+/** Selector "Abrir con": se recuerda en este celular. */
+const selectorApp = () => `<label class="abrir-con">Abrir con<select id="appWa">${Object.entries(APPS_WA).map(([k, t]) => `<option value="${k}" ${appWa() === k ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+  ${esAndroid() ? '' : '<small class="sub">En este equipo no se puede elegir: se abre el WhatsApp que tenga (en la PC, WhatsApp Web). La elección funciona en celulares Android.</small>'}`;
+function enlazarSelector(caja, repintar) { const s = caja.querySelector('#appWa'); if (s) s.onchange = () => { fijarAppWa(s.value); repintar(); }; }
 const enviadosHoy = () => Object.values(D.mensajes).flat().filter((m) => m.ESTADO === 'ENVIADO' && (m.USUARIO === 'yo' || m.USUARIO === D._s?.usuario) && String(m.F_RESULTADO).slice(0, 10) === hoyISO()).length;
 
 /** Durante el mes en paralelo con la macro (fase 7) se recuerda no enviar desde las dos. */
@@ -108,11 +114,12 @@ function pintarTanda(ui, caja, ctx) {
       ${t.abierto ? `<p class="sub">¿Se envió?</p>
         <button class="btn grande verde" data-r="ENVIADO">✓ Enviado</button>
         <div class="acciones"><button class="btn" data-r="SIN_WHATSAPP">✗ No tiene WhatsApp</button><button class="btn" data-r="FALLIDO">No salió</button></div>
-        <button class="btn secundario" id="reabrir">${ic('chat')}Abrir WhatsApp otra vez</button>`
-      : `<button class="btn grande verde" id="abrir">${ic('chat')}${IMG ? '1. ' : ''}Abrir WhatsApp</button>`}
+        <button class="btn secundario" id="reabrir">${ic('chat')}Abrir ${nombreApp()} otra vez</button>`
+      : `${selectorApp()}<button class="btn grande verde" id="abrir">${ic('chat')}${IMG ? '1. ' : ''}Abrir ${nombreApp()}</button>`}
       <div class="acciones"><button class="btn secundario" id="saltar">Saltar</button><button class="btn secundario" id="terminar">Terminar tanda</button></div></section>`;
   const abrir = () => { x.texto = caja.querySelector('#txt').value; abrirWa(x.telefono.NUMERO, x.texto); t.abierto = true; pintarTanda(ui, caja, ctx); };
   const ab = caja.querySelector('#abrir'); if (ab) ab.onclick = abrir;
+  enlazarSelector(caja, () => { x.texto = caja.querySelector('#txt').value; pintarTanda(ui, caja, ctx); });
   const im = caja.querySelector('#imagen');
   if (im) im.onclick = async () => {
     const r = await compartirImagen(IMG.dataUrl);
@@ -272,14 +279,16 @@ function tabPlantillas(ui, caja) {
       await ui.encolar('GUARDAR_IMAGEN_AVISO', { dataUrl });
       await guardarLocal(dataUrl);
       D.config.IMAGEN_AVISO = 'LOCAL';
-      if (!/^S[IÍ]$/i.test(String(D.config.ENVIAR_IMAGEN || ''))) { await ui.encolar('GUARDAR_CONFIG', { valores: { ENVIAR_IMAGEN: 'SI' } }); D.config.ENVIAR_IMAGEN = 'SI'; }
+      if (!/^S[IÍ]$/i.test(String(D.config.ENVIAR_IMAGEN || ''))) await hacer(ui, 'GUARDAR_CONFIG', { valores: { ENVIAR_IMAGEN: 'SI' } });
       celebrar('Imagen lista', 'Se enviará en cada aviso de la tanda');
     } catch (err) { ui.aviso(err.message, 'error'); }
     tabPlantillas(ui, caja);
   };
   caja.querySelector('#imgAct').onclick = async () => {
     const v = activa ? 'NO' : 'SI';
-    await ui.encolar('GUARDAR_CONFIG', { valores: { ENVIAR_IMAGEN: v } }); D.config.ENVIAR_IMAGEN = v;
+    await hacer(ui, 'GUARDAR_CONFIG', { valores: { ENVIAR_IMAGEN: v } });
+    // una tanda ya empezada también respeta el cambio (los mensajes que faltan)
+    if (TANDA) TANDA.lista.slice(TANDA.i).forEach((x) => { x.texto = conImagen(quitarImagen(x.texto, CONFIG.IMAGEN_PUBLICA), D.config, CONFIG.IMAGEN_PUBLICA); });
     ui.aviso(v === 'SI' ? 'Los avisos llevarán la imagen.' : 'Los avisos irán solo con texto.'); tabPlantillas(ui, caja);
   };
   const q = caja.querySelector('#imgQuitar');

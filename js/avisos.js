@@ -71,6 +71,12 @@ export function conImagen(texto, cfg, enlace) {
   return String(texto).replace(/\s+$/, '') + '\n\nQR y cuentas de pago: ' + enlace;
 }
 
+/** Quita el enlace de la imagen de un mensaje ya armado (cuando se elige "No enviar imagen"). */
+export function quitarImagen(texto, enlace) {
+  if (!enlace) return String(texto);
+  return String(texto).split('\n\nQR y cuentas de pago: ' + enlace).join('').split(enlace).join('').replace(/\s+$/, '');
+}
+
 export function armarMensaje(texto, c, cfg, periodo, hoy) {
   const semilla = semillaDe(c.idCliente), nombre = nombrePropio(c.nombre), meses = Number(c.meses) || 0;
   const servicio = c.servicio === 'DUO' ? (cfg.SERVICIO_DUO || 'Dúo') : /TV/.test(c.servicio || '') ? (cfg.SERVICIO_TV || 'TV Cable') : (c.servicio || cfg.SERVICIO_DEFECTO || 'TV Cable');

@@ -48,6 +48,11 @@ export function sincronizarTodo() {
       const antes = await kvGet('libroId');
       if (s.libro && antes && antes !== s.libro) await limpiarPorCambioDeLibro(s.libro);
       if (s.libro) await kvSet('libroId', s.libro);
+      // un cambio de configuración que el servidor todavía no procesó (ej. "No enviar imagen")
+      // no debe deshacerse con los datos recién bajados: se superpone hasta que se confirme
+      const cfgPend = (await colaTodos()).filter((o) => o.tipo === 'GUARDAR_CONFIG' && !['ok', 'rechazado'].includes(o.estadoLocal))
+        .sort((a, b) => String(a.fDispositivo).localeCompare(String(b.fDispositivo)));
+      if (cfgPend.length) s.config = Object.assign({}, s.config, ...cfgPend.map((o) => (o.datos || {}).valores || {}));
       await kvSet('datos', s);
       await kvSet('ultimaSync', ahoraISO());
       aplicar(s);

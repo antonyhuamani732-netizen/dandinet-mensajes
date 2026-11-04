@@ -9,7 +9,7 @@
 // Todo pasa por la cola: funciona sin señal y el servidor vuelve a validar el rol.
 import { llamar } from './api.js';
 import {
-  D, esc, soles, txtFecha, hoyISO, txtTel, claseEstado, aplicarLocal, telefonosDe, gestionesDe, enNoEnviar, abrirExterno, alertasDe, visitasDe,
+  D, esc, soles, txtFecha, hoyISO, txtTel, claseEstado, aplicarLocal, telefonosDe, gestionesDe, enNoEnviar, abrirExterno, enlaceWa, alertasDe, visitasDe,
 } from './datos.js';
 import { ic } from './iconos.js';
 import { elegirEnMapa, miUbicacion } from './mapa.js';
@@ -300,7 +300,7 @@ function contactar(ui, id, modo, alTerminar, idTel) {
   const abrir = (t) => {
     const n = String(t.NUMERO).replace('+', '');
     ui.cerrarModal();
-    abrirExterno(modo === 'llamar' ? 'tel:+' + n : 'https://wa.me/' + n);
+    abrirExterno(modo === 'llamar' ? 'tel:+' + n : enlaceWa(n, ''));
     // al volver a la app: cómo fue (diagnóstico del número)
     setTimeout(() => diagnostico(ui, id, t, modo, alTerminar), 600);
   };

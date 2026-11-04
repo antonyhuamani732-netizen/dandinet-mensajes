@@ -9,8 +9,27 @@ import { CONFIG } from './config.js';
 /** Abre WhatsApp o una llamada. En el MODO PRUEBA no abre nada: solo muestra qué se habría abierto. */
 export function abrirExterno(url) {
   if (CONFIG.DEMO) { window.dispatchEvent(new CustomEvent('demo-enlace', { detail: url })); return; }
-  if (/^tel:/.test(url)) location.href = url;
+  if (/^(tel|intent):/.test(url)) location.href = url;
   else window.open(url, '_blank', 'noopener');
+}
+
+// ---------------------------------------------------------------- ¿WhatsApp o WhatsApp Business?
+// Se elige en cada celular (cada uno tiene sus aplicaciones). Solo Android permite abrir una en
+// particular; en iPhone y PC el sistema decide (WhatsApp Web en la PC).
+export const APPS_WA = { auto: 'Que elija el celular', whatsapp: 'WhatsApp', business: 'WhatsApp Business' };
+const PAQUETE_WA = { whatsapp: 'com.whatsapp', business: 'com.whatsapp.w4b' };
+export const esAndroid = () => /Android/i.test(navigator.userAgent || '');
+export function appWa() { try { const v = localStorage.getItem('appWa'); return APPS_WA[v] ? v : 'auto'; } catch (e) { return 'auto'; } }
+export function fijarAppWa(v) { try { localStorage.setItem('appWa', APPS_WA[v] ? v : 'auto'); } catch (e) { /* sin almacenamiento: queda "auto" */ } }
+
+/** Enlace para escribirle a un número con el texto ya puesto, en la aplicación elegida. */
+export function enlaceWa(numero, texto, app = appWa(), android = esAndroid()) {
+  const n = String(numero).replace(/\D/g, ''), t = texto ? encodeURIComponent(texto) : '';
+  const web = 'https://wa.me/' + n + (t ? '?text=' + t : '');
+  if (!android || !PAQUETE_WA[app]) return web;
+  // Android: abre exactamente esa aplicación; si no está instalada, vuelve al enlace normal
+  return 'intent://send/?phone=' + n + (t ? '&text=' + t : '') + '#Intent;scheme=whatsapp;package=' + PAQUETE_WA[app] +
+    ';S.browser_fallback_url=' + encodeURIComponent(web) + ';end';
 }
 
 export const D = {
@@ -175,6 +194,8 @@ export async function aplicarLocal(tipo, d) {
     }
   } else if (tipo === 'ABRIR_QUEJA') {
     agregarQuejaLocal(s, d, ahora);
+  } else if (tipo === 'GUARDAR_CONFIG') {
+    s.config = Object.assign({}, s.config, d.valores || {});
   } else if (tipo === 'ATENDER_QUEJA') {
     const t = s.quejas, f = t && t.filas.find((x) => x[col(t, 'ID_QUEJA')] === d.idQueja);
     if (f) {
