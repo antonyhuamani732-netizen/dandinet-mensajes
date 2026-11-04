@@ -20,6 +20,8 @@ export const TEXTOS = {
     'Si al llamar no es el cliente, márquelo como equivocado: queda pendiente para corregirlo.']],
   envios: ['Envíos por WhatsApp', ['La app arma el mensaje y abre WhatsApp: usted solo pulsa Enviar.', 'Al volver, marque cómo fue (enviado, no tiene WhatsApp, no salió).',
     'Cada celular tiene su límite diario: cuida el número de bloqueos.', 'Cada usuario envía a los clientes de SUS zonas.']],
+  imagen: ['Imagen de los avisos', ['Es como el botón "Imagen" de la macro: una sola imagen para todos los avisos.', 'WhatsApp no deja adjuntarla por enlace: primero sale el texto y luego, con "Enviar imagen", elige el chat del cliente.',
+    'En la PC la imagen se copia: péguela en el chat con Ctrl+V.']],
   tanda: ['Tanda', ['Elija zona y estado; la app ordena primero a los contactos guardados.', 'No se envía a quien pidió NO ENVIAR, pagó, prometió pagar o ya fue avisado hace poco.',
     'Toque "Ver por qué" para ver los excluidos.']],
   verificar: ['Verificar números', ['Abre el chat SIN enviar nada.', 'Si el chat se abre, tiene WhatsApp. Vale para todos los clientes con ese número.']],

@@ -6,11 +6,13 @@ import { D, esc, soles, txtFecha, txtTel, hoyISO, claseEstado, aplicarLocal, tel
 import { candidatosTanda, candidatosConfirmacion, motivoHorario, armarMensaje, variablesDesconocidas, VARIABLES, ultimoInforme } from './avisos.js';
 import { ic } from './iconos.js';
 import { ayuda, celebrar } from './ayuda.js';
+import { imagenActiva, imagenAviso, compartirImagen, prepararImagen, guardarLocal } from './imagen.js';
 
 let PESTANA = 'tanda';
 const FILTROS = { zona: '', estado: '', nivel: '' };
 let TANDA = null;          // { id, lista, i, enviados, sinWa, fallidos, abierto }
 let VERIF = null;          // { lista, i, si, no }
+let IMG = null;            // imagen de los avisos ya cargada { id, dataUrl }
 
 const ESTADOS = ['Por vencer', 'Moroso 1 mes', 'Moroso 2 meses', 'Moroso 3+ meses', 'Para corte'];
 const NIVELES = [['', 'Todos los avisos'], ['0', '1.er aviso'], ['1', '2.º aviso'], ['2', 'Aviso de corte (3.º)']];
@@ -70,8 +72,10 @@ function tabTanda(ui, caja, ctx) {
     <p class="sub">"Falta verificar" → pestaña <b>Verificar</b>. "Ningún teléfono con WhatsApp" → <a href="#/mapa">Mapa</a> (en persona).</p></details>` : ''}`;
   const cambiar = () => { FILTROS.zona = caja.querySelector('#fZona').value; FILTROS.estado = caja.querySelector('#fEstado').value; FILTROS.nivel = caja.querySelector('#fNivel').value; tabTanda(ui, caja, ctx); };
   ['#fZona', '#fEstado', '#fNivel'].forEach((s) => { caja.querySelector(s).onchange = cambiar; });
-  caja.querySelector('#empezar').onclick = () => {
-    TANDA = { id: 'TND-' + hoyISO().replace(/-/g, '') + '-' + Date.now().toString(36).slice(-4).toUpperCase(), lista: T.elegibles.slice(0, restan), i: 0, enviados: 0, sinWa: 0, fallidos: 0, abierto: false };
+  caja.querySelector('#empezar').onclick = async () => {
+    IMG = imagenActiva() ? await imagenAviso() : null;
+    if (imagenActiva() && !IMG) ui.aviso('La imagen de los avisos no está en este celular (conéctese una vez para bajarla). La tanda sigue solo con texto.', 'error');
+    TANDA = { id: 'TND-' + hoyISO().replace(/-/g, '') + '-' + Date.now().toString(36).slice(-4).toUpperCase(), lista: T.elegibles.slice(0, restan), i: 0, enviados: 0, sinWa: 0, fallidos: 0, abierto: false, imagen: false };
     pintarTanda(ui, caja, ctx);
   };
 }
@@ -93,21 +97,32 @@ function pintarTanda(ui, caja, ctx) {
       <p class="sub">${esc(x.zona)} · <span class="chip ${claseEstado(x.estado)}">${esc(x.estado)}</span> · ${soles(x.monto)}</p>
       <p>${ic('telefono')} <b>${esc(txtTel(x.telefono.NUMERO))}</b> <span class="chip ${wc}">${wt}</span> · ${esc(x.plantilla)} (${x.avisoNivel}.º aviso)</p>
       <label>Mensaje (puede corregirlo antes de abrir WhatsApp)<textarea id="txt" rows="10">${esc(x.texto)}</textarea></label>
+      ${IMG ? `<div class="con-imagen"><img src="${IMG.dataUrl}" alt="Imagen del aviso" width="64" height="64"><span><b>${t.abierto ? '2. Ahora la imagen' : 'Lleva imagen'}</b><small>${t.abierto
+        ? 'Pulse <b>Enviar imagen</b> y elija el chat de este cliente (sale primero en WhatsApp).' : 'Primero el texto; después la imagen.'}</small></span></div>` : ''}
+      ${t.abierto && IMG ? `<button class="btn ${t.imagen ? '' : 'verde'}" id="imagen">${ic('camara')}${t.imagen ? 'Enviar imagen otra vez' : 'Enviar imagen'}</button>` : ''}
       ${t.abierto ? `<p class="sub">¿Se envió?</p>
         <button class="btn grande verde" data-r="ENVIADO">✓ Enviado</button>
         <div class="acciones"><button class="btn" data-r="SIN_WHATSAPP">✗ No tiene WhatsApp</button><button class="btn" data-r="FALLIDO">No salió</button></div>
         <button class="btn secundario" id="reabrir">${ic('chat')}Abrir WhatsApp otra vez</button>`
-      : `<button class="btn grande verde" id="abrir">${ic('chat')}Abrir WhatsApp</button>`}
+      : `<button class="btn grande verde" id="abrir">${ic('chat')}${IMG ? '1. ' : ''}Abrir WhatsApp</button>`}
       <div class="acciones"><button class="btn secundario" id="saltar">Saltar</button><button class="btn secundario" id="terminar">Terminar tanda</button></div></section>`;
   const abrir = () => { x.texto = caja.querySelector('#txt').value; abrirWa(x.telefono.NUMERO, x.texto); t.abierto = true; pintarTanda(ui, caja, ctx); };
   const ab = caja.querySelector('#abrir'); if (ab) ab.onclick = abrir;
+  const im = caja.querySelector('#imagen');
+  if (im) im.onclick = async () => {
+    const r = await compartirImagen(IMG.dataUrl);
+    if (r === 'copiada') ui.aviso('Imagen copiada: en el chat de WhatsApp pulse Ctrl+V (o mantenga pulsado → Pegar) y envíela.');
+    else if (r === 'descargada') ui.aviso('Imagen descargada: adjúntela en el chat con el clip 📎.');
+    if (r !== 'cancelada') { t.imagen = true; pintarTanda(ui, caja, ctx); }
+  };
   const re = caja.querySelector('#reabrir'); if (re) re.onclick = abrir;
-  caja.querySelector('#saltar').onclick = () => { t.i++; t.abierto = false; pintarTanda(ui, caja, ctx); };
+  caja.querySelector('#saltar').onclick = () => { t.i++; t.abierto = false; t.imagen = false; pintarTanda(ui, caja, ctx); };
   caja.querySelector('#terminar').onclick = () => { t.lista = t.lista.slice(0, t.i); pintarTanda(ui, caja, ctx); };
   caja.querySelectorAll('[data-r]').forEach((b) => { b.onclick = async () => {
     const r = b.dataset.r;
+    if (r === 'ENVIADO' && IMG && !t.imagen && !(await ui.confirmar('No pulsó "Enviar imagen". ¿Seguir con el siguiente sin la imagen?', { titulo: 'Falta la imagen', si: 'Seguir', no: 'Volver' }))) return;
     await hacer(ui, 'REGISTRAR_ENVIO', { idCliente: x.idCliente, idTel: String(x.telefono.ID_TEL).startsWith('LOCAL') ? '' : x.telefono.ID_TEL, numero: x.telefono.NUMERO,
-      plantilla: x.plantilla, avisoNivel: x.avisoNivel, texto: caja.querySelector('#txt').value, resultado: r, idTanda: t.id, fecha: new Date().toISOString() });
+      plantilla: x.plantilla, avisoNivel: x.avisoNivel, texto: caja.querySelector('#txt').value, resultado: r, idTanda: t.id, fecha: new Date().toISOString(), imagen: r === 'ENVIADO' && t.imagen });
     if (r === 'ENVIADO') t.enviados++; else if (r === 'SIN_WHATSAPP') t.sinWa++; else t.fallidos++;
     if (r === 'ENVIADO') celebrar('¡Mensaje enviado!', `${x.nombre} · van ${enviadosHoy()} de ${ctx.limite} hoy`);
     else if (r === 'SIN_WHATSAPP') celebrar('Anotado: no tiene WhatsApp', x.nombre, 'aviso');
@@ -119,7 +134,7 @@ function pintarTanda(ui, caja, ctx) {
         t.lista.splice(t.i + 1, 0, Object.assign({}, x, { telefono: otro }));
       } else if (!telefonosDe(x.idCliente).conWa.length) ui.aviso('El cliente no tiene ningún número con WhatsApp: hay que avisarle en persona.', 'error');
     }
-    t.i++; t.abierto = false;
+    t.i++; t.abierto = false; t.imagen = false;
     pintarTanda(ui, caja, ctx);
   }; });
 }
@@ -217,12 +232,46 @@ function tabHoy(ui, caja) {
 // PLANTILLAS
 // ============================================================================
 function tabPlantillas(ui, caja) {
-  caja.innerHTML = `<p class="sub">Variables: ${VARIABLES.map((x) => `<code>${x}</code>`).join(' ')}</p>
+  const activa = /^S[IÍ]$/i.test(String(D.config.ENVIAR_IMAGEN || '').trim()), hay = !!String(D.config.IMAGEN_AVISO || '');
+  caja.innerHTML = `<section class="ficha imagen-aviso"><div class="titulo-fila sub-titulo"><b>${ic('camara')}Imagen de los avisos</b>${ayuda('imagen')}</div>
+      <div class="con-imagen"><span id="imgPrev" class="img-prev">${hay ? 'cargando…' : 'Sin imagen'}</span>
+        <span><b>${activa && hay ? 'Se envía en cada aviso de la tanda' : activa ? 'Activada, pero falta elegir la imagen' : 'No se envía'}</b>
+        <small>Por ejemplo: cuentas para pagar, QR de Yape o un aviso de corte. Va después del texto.</small></span></div>
+      <div class="botones"><label class="btn" for="imgArch">${ic('camara')}${hay ? 'Cambiar imagen' : 'Elegir imagen'}</label>
+        <button class="btn ${activa ? '' : 'verde'}" id="imgAct" ${!hay && !activa ? 'disabled' : ''}>${activa ? 'No enviar imagen' : 'Enviar imagen'}</button></div>
+      <input type="file" id="imgArch" accept="image/jpeg,image/png,image/webp" hidden>
+      ${hay ? '<button class="btn secundario" id="imgQuitar">Quitar la imagen</button>' : ''}</section>
+    <p class="sub">Variables: ${VARIABLES.map((x) => `<code>${x}</code>`).join(' ')}</p>
     <ul class="lista compacta">${D.plantillas.map((p) => `<li class="tel"><div><b>${esc(p.NOMBRE)}</b><small>${esc(p.ESTADOS || p.CUANDO || 'uso manual')}</small></div>
       <div class="acciones-tel"><button class="mini" data-p="${esc(p.NOMBRE)}">${ic('editar')}Editar</button></div></li>`).join('')}</ul>
     <button class="btn secundario" id="nueva">${ic('agregar')}Nueva plantilla</button>`;
   caja.querySelectorAll('[data-p]').forEach((b) => { b.onclick = () => editarPlantilla(ui, D.plantillas.find((p) => p.NOMBRE === b.dataset.p), () => tabPlantillas(ui, caja)); });
   caja.querySelector('#nueva').onclick = () => editarPlantilla(ui, null, () => tabPlantillas(ui, caja));
+  // imagen de los avisos
+  if (hay) imagenAviso().then((g) => { const p = caja.querySelector('#imgPrev'); if (p) p.innerHTML = g ? `<img src="${g.dataUrl}" alt="Imagen actual de los avisos">` : 'No se pudo bajar (sin señal)'; });
+  caja.querySelector('#imgArch').onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const dataUrl = await prepararImagen(f);
+      await ui.encolar('GUARDAR_IMAGEN_AVISO', { dataUrl });
+      await guardarLocal(dataUrl);
+      D.config.IMAGEN_AVISO = 'LOCAL';
+      if (!/^S[IÍ]$/i.test(String(D.config.ENVIAR_IMAGEN || ''))) { await ui.encolar('GUARDAR_CONFIG', { valores: { ENVIAR_IMAGEN: 'SI' } }); D.config.ENVIAR_IMAGEN = 'SI'; }
+      celebrar('Imagen lista', 'Se enviará en cada aviso de la tanda');
+    } catch (err) { ui.aviso(err.message, 'error'); }
+    tabPlantillas(ui, caja);
+  };
+  caja.querySelector('#imgAct').onclick = async () => {
+    const v = activa ? 'NO' : 'SI';
+    await ui.encolar('GUARDAR_CONFIG', { valores: { ENVIAR_IMAGEN: v } }); D.config.ENVIAR_IMAGEN = v;
+    ui.aviso(v === 'SI' ? 'Los avisos llevarán la imagen.' : 'Los avisos irán solo con texto.'); tabPlantillas(ui, caja);
+  };
+  const q = caja.querySelector('#imgQuitar');
+  if (q) q.onclick = async () => {
+    if (!(await ui.confirmar('Los avisos irán solo con texto. La imagen queda guardada en su Drive (carpeta Imagenes).', { titulo: 'Quitar la imagen', si: 'Quitar' }))) return;
+    await ui.encolar('GUARDAR_IMAGEN_AVISO', { quitar: true }); D.config.IMAGEN_AVISO = '';
+    ui.aviso('Imagen quitada.'); tabPlantillas(ui, caja);
+  };
 }
 
 function editarPlantilla(ui, p, alTerminar) {

@@ -7,6 +7,7 @@ import { CONFIG } from './config.js';
 import { llamar } from './api.js';
 import { kvGet, kvSet, kvDel, kvClaves, colaPut, colaTodos, colaVaciar, colaBorrar } from './db.js';
 import { aplicar, ahoraISO } from './datos.js';
+import { precargarImagen } from './imagen.js';
 
 let _enCurso = null;
 let _ultimoInicio = 0;
@@ -50,6 +51,7 @@ export function sincronizarTodo() {
       await kvSet('datos', s);
       await kvSet('ultimaSync', ahoraISO());
       aplicar(s);
+      precargarImagen();      // la imagen de los avisos, para usarla sin señal
       // lo ya procesado hace más de 7 días se retira del historial local
       const limite = Date.now() - 7 * 864e5;
       for (const o of await colaTodos()) if ((o.estadoLocal === 'ok' || o.estadoLocal === 'rechazado') && Date.parse(o.fDispositivo) < limite) await colaBorrar(o.idSolicitud);
