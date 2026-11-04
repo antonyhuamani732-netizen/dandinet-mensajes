@@ -7,6 +7,10 @@ import { candidatosTanda, candidatosConfirmacion, motivoHorario, armarMensaje, v
 import { ic } from './iconos.js';
 import { ayuda, celebrar } from './ayuda.js';
 import { imagenActiva, imagenAviso, compartirImagen, prepararImagen, guardarLocal } from './imagen.js';
+import { CONFIG } from './config.js';
+/** Modo de un solo paso: la imagen va como vista previa (enlace) dentro del mensaje. */
+const enlaceImagen = () => /^S[IÍ]$/i.test(String(D.config.ENVIAR_IMAGEN || '').trim()) && CONFIG.IMAGEN_PUBLICA ? CONFIG.IMAGEN_PUBLICA : '';
+const MINIATURA = () => 'pago/imagen.jpg?v=1';   // la misma imagen, servida por la propia app
 
 let PESTANA = 'tanda';
 const FILTROS = { zona: '', estado: '', nivel: '' };
@@ -73,8 +77,8 @@ function tabTanda(ui, caja, ctx) {
   const cambiar = () => { FILTROS.zona = caja.querySelector('#fZona').value; FILTROS.estado = caja.querySelector('#fEstado').value; FILTROS.nivel = caja.querySelector('#fNivel').value; tabTanda(ui, caja, ctx); };
   ['#fZona', '#fEstado', '#fNivel'].forEach((s) => { caja.querySelector(s).onchange = cambiar; });
   caja.querySelector('#empezar').onclick = async () => {
-    IMG = imagenActiva() ? await imagenAviso() : null;
-    if (imagenActiva() && !IMG) ui.aviso('La imagen de los avisos no está en este celular (conéctese una vez para bajarla). La tanda sigue solo con texto.', 'error');
+    IMG = !enlaceImagen() && imagenActiva() ? await imagenAviso() : null;
+    if (!enlaceImagen() && imagenActiva() && !IMG) ui.aviso('La imagen de los avisos no está en este celular (conéctese una vez para bajarla). La tanda sigue solo con texto.', 'error');
     TANDA = { id: 'TND-' + hoyISO().replace(/-/g, '') + '-' + Date.now().toString(36).slice(-4).toUpperCase(), lista: T.elegibles.slice(0, restan), i: 0, enviados: 0, sinWa: 0, fallidos: 0, abierto: false, imagen: false };
     pintarTanda(ui, caja, ctx);
   };
@@ -97,6 +101,7 @@ function pintarTanda(ui, caja, ctx) {
       <p class="sub">${esc(x.zona)} · <span class="chip ${claseEstado(x.estado)}">${esc(x.estado)}</span> · ${soles(x.monto)}</p>
       <p>${ic('telefono')} <b>${esc(txtTel(x.telefono.NUMERO))}</b> <span class="chip ${wc}">${wt}</span> · ${esc(x.plantilla)} (${x.avisoNivel}.º aviso)</p>
       <label>Mensaje (puede corregirlo antes de abrir WhatsApp)<textarea id="txt" rows="10">${esc(x.texto)}</textarea></label>
+      ${enlaceImagen() ? `<div class="con-imagen"><img src="${MINIATURA()}" alt="Imagen de pago" width="64" height="64"><span><b>Con imagen de pago</b><small>Va en el mismo mensaje: WhatsApp la muestra encima del texto. Solo pulse Enviar.</small></span></div>` : ''}
       ${IMG ? `<div class="con-imagen"><img src="${IMG.dataUrl}" alt="Imagen del aviso" width="64" height="64"><span><b>${t.abierto ? '2. Ahora la imagen' : 'Lleva imagen'}</b><small>${t.abierto
         ? 'Pulse <b>Enviar imagen</b> y elija el chat de este cliente (sale primero en WhatsApp).' : 'Primero el texto; después la imagen.'}</small></span></div>` : ''}
       ${t.abierto && IMG ? `<button class="btn ${t.imagen ? '' : 'verde'}" id="imagen">${ic('camara')}${t.imagen ? 'Enviar imagen otra vez' : 'Enviar imagen'}</button>` : ''}
@@ -233,7 +238,17 @@ function tabHoy(ui, caja) {
 // ============================================================================
 function tabPlantillas(ui, caja) {
   const activa = /^S[IÍ]$/i.test(String(D.config.ENVIAR_IMAGEN || '').trim()), hay = !!String(D.config.IMAGEN_AVISO || '');
-  caja.innerHTML = `<section class="ficha imagen-aviso"><div class="titulo-fila sub-titulo"><b>${ic('camara')}Imagen de los avisos</b>${ayuda('imagen')}</div>
+  const pub = !!CONFIG.IMAGEN_PUBLICA;
+  caja.innerHTML = pub ? `<section class="ficha imagen-aviso"><div class="titulo-fila sub-titulo"><b>${ic('camara')}Imagen de los avisos</b>${ayuda('imagen')}</div>
+      <div class="con-imagen"><span class="img-prev"><img src="${MINIATURA()}" alt="Imagen de pago publicada"></span>
+        <span><b>${activa ? 'Va en cada aviso, en el mismo mensaje' : 'No se envía'}</b>
+        <small>Al final del aviso va un enlace y WhatsApp muestra la imagen como vista previa. Un solo paso: abrir WhatsApp y Enviar.</small></span></div>
+      <button class="btn ${activa ? '' : 'verde'}" id="imgAct">${activa ? 'No enviar imagen' : 'Enviar imagen'}</button>
+      <p class="sub">Esta imagen está publicada en internet (es la de pago, para compartir). Para cambiarla, pida que se publique la nueva.</p></section>
+    <p class="sub">Variables: ${VARIABLES.map((x) => `<code>${x}</code>`).join(' ')}</p>
+    <ul class="lista compacta">${D.plantillas.map((p) => `<li class="tel"><div><b>${esc(p.NOMBRE)}</b><small>${esc(p.ESTADOS || p.CUANDO || 'uso manual')}</small></div>
+      <div class="acciones-tel"><button class="mini" data-p="${esc(p.NOMBRE)}">${ic('editar')}Editar</button></div></li>`).join('')}</ul>
+    <button class="btn secundario" id="nueva">${ic('agregar')}Nueva plantilla</button>` : `<section class="ficha imagen-aviso"><div class="titulo-fila sub-titulo"><b>${ic('camara')}Imagen de los avisos</b>${ayuda('imagen')}</div>
       <div class="con-imagen"><span id="imgPrev" class="img-prev">${hay ? 'cargando…' : 'Sin imagen'}</span>
         <span><b>${activa && hay ? 'Se envía en cada aviso de la tanda' : activa ? 'Activada, pero falta elegir la imagen' : 'No se envía'}</b>
         <small>Por ejemplo: cuentas para pagar, QR de Yape o un aviso de corte. Va después del texto.</small></span></div>
@@ -248,8 +263,9 @@ function tabPlantillas(ui, caja) {
   caja.querySelectorAll('[data-p]').forEach((b) => { b.onclick = () => editarPlantilla(ui, D.plantillas.find((p) => p.NOMBRE === b.dataset.p), () => tabPlantillas(ui, caja)); });
   caja.querySelector('#nueva').onclick = () => editarPlantilla(ui, null, () => tabPlantillas(ui, caja));
   // imagen de los avisos
-  if (hay) imagenAviso().then((g) => { const p = caja.querySelector('#imgPrev'); if (p) p.innerHTML = g ? `<img src="${g.dataUrl}" alt="Imagen actual de los avisos">` : 'No se pudo bajar (sin señal)'; });
-  caja.querySelector('#imgArch').onchange = async (e) => {
+  if (!pub && hay) imagenAviso().then((g) => { const p = caja.querySelector('#imgPrev'); if (p) p.innerHTML = g ? `<img src="${g.dataUrl}" alt="Imagen actual de los avisos">` : 'No se pudo bajar (sin señal)'; });
+  const ia = caja.querySelector('#imgArch');
+  if (ia) ia.onchange = async (e) => {
     const f = e.target.files[0]; if (!f) return;
     try {
       const dataUrl = await prepararImagen(f);

@@ -5,6 +5,7 @@
 // - horario: día sin envíos y franja horaria permitida.
 // Se usa en el celular (pantalla Envíos) y en las pruebas locales (Node).
 
+import { CONFIG } from './config.js';
 export const VARIABLES = ['{Saludo}', '{Nombre}', '{PrimerNombre}', '{Empresa}', '{Servicio}', '{Meses}', '{Periodos}', '{Monto}', '{Plan}',
   '{FechaVencimiento}', '{FechaLimite}', '{DiasAtraso}', '{MetodosPago}', '{CelConstancia}', '{Zona}', '{Despedida}'];
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'setiembre', 'octubre', 'noviembre', 'diciembre'];
@@ -61,6 +62,15 @@ export const semillaDe = (idCliente) => Number(String(idCliente).replace(/\D/g, 
  * Arma el mensaje. c = { idCliente, nombre, servicio, meses, monto, plan, zona, diasAtraso }
  * cfg = configuración (EMPRESA, SALUDOS, DESPEDIDAS, METODOS_PAGO, CEL_CONSTANCIA, DIA_ULTIMO_PAGO, DIAS_PLAZO, SERVICIO_*)
  */
+/**
+ * Imagen de pago dentro del MISMO mensaje (un solo paso): con ENVIAR_IMAGEN = SI se agrega al final
+ * el enlace a la página pública de la imagen; WhatsApp la muestra como vista previa sobre el texto.
+ */
+export function conImagen(texto, cfg, enlace) {
+  if (!enlace || !/^S[IÍ]$/i.test(String((cfg || {}).ENVIAR_IMAGEN || '').trim()) || String(texto).includes(enlace)) return texto;
+  return String(texto).replace(/\s+$/, '') + '\n\nQR y cuentas de pago: ' + enlace;
+}
+
 export function armarMensaje(texto, c, cfg, periodo, hoy) {
   const semilla = semillaDe(c.idCliente), nombre = nombrePropio(c.nombre), meses = Number(c.meses) || 0;
   const servicio = c.servicio === 'DUO' ? (cfg.SERVICIO_DUO || 'Dúo') : /TV/.test(c.servicio || '') ? (cfg.SERVICIO_TV || 'TV Cable') : (c.servicio || cfg.SERVICIO_DEFECTO || 'TV Cable');
@@ -208,7 +218,7 @@ export function candidatosTanda(Dd, cfg, hoy, filtros = {}) {
     const base = { idCliente: c.ID_CLIENTE, nombre: c.NOMBRES || c.ID_CLIENTE, zona: c.ZONA || '', guardado: c.CONTACTO_GUARDADO === 'SI', monto: Number(e.MONTO) || 0, estado: e.ESTADO || '' };
     if (r.motivo) { excluidos.push(Object.assign(base, { motivo: r.motivo })); continue; }
     const p = (Dd.plantillas || []).find((x) => x.NOMBRE === r.plantilla) || {};
-    const texto = armarMensaje(p.TEXTO, { idCliente: c.ID_CLIENTE, nombre: c.NOMBRES, servicio: c.SERVICIO, meses: e.MESES, monto: e.MONTO, plan: e.PLAN, zona: c.ZONA }, cfg, periodo, hoy);
+    const texto = conImagen(armarMensaje(p.TEXTO, { idCliente: c.ID_CLIENTE, nombre: c.NOMBRES, servicio: c.SERVICIO, meses: e.MESES, monto: e.MONTO, plan: e.PLAN, zona: c.ZONA }, cfg, periodo, hoy), cfg, CONFIG.IMAGEN_PUBLICA);
     elegibles.push(Object.assign(base, { telefono: r.telefono, plantilla: r.plantilla, avisoNivel: r.avisosPrevios + 1, texto }));
   }
   return { elegibles: ordenarTanda(elegibles, cfg), excluidos, periodo };
